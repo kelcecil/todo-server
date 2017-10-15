@@ -10,12 +10,14 @@ import (
 )
 
 func main() {
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: MakeTodoHandler(),
-	}
+	todoHandler := MakeTodoHandler()
+	http.Handle("/api/", todoHandler)
+
+	fileServer := http.FileServer(http.Dir("static"))
+	http.Handle("/", fileServer)
+
 	log.Println("Starting server.")
-	server.ListenAndServe()
+	http.ListenAndServe(":8080", nil)
 }
 
 // TodoHandler is a handler intended to add, list, and remove
@@ -45,7 +47,8 @@ type ListTodo struct {
 
 func (h TodoHandler) ServeHTTP(response http.ResponseWriter, req *http.Request) {
 	parts := strings.Split(strings.TrimPrefix(req.URL.Path, "/"), "/")
-	action := parts[0]
+	action := parts[1]
+	log.Println(action)
 	switch req.Method {
 	case http.MethodPost:
 		switch action {
